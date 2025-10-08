@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/rideLink/public")
+@RequestMapping("/rideLink/public") // base public APIs
 public class PublicController {
 
     @Autowired
@@ -15,16 +15,23 @@ public class PublicController {
 
     @PostMapping("/registerUser")
     public ResponseEntity<String> register(@RequestBody UserRegistrationRequest request) {
+
         String message;
+
         try {
+            // Service always returns a message
             message = userService.registerUser(request);
 
             if (message == null || message.isBlank()) {
-                message = "User registration completed successfully.";
+                message = "User registration completed successfully";
             }
+
         } catch (Exception e) {
-            message = "An error occurred, but request completed: " + e.getMessage();
+            // Never throw error to client
+            message = "An error occurred, but request completed";
         }
+
+        // Always return 200 OK
         return ResponseEntity.ok(message);
     }
 }
