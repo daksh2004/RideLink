@@ -1,20 +1,17 @@
 package com.Ridelink.RideLink.DTO;
 
-import jakarta.persistence.Column;
 import lombok.Data;
 
 @Data
 public class UserRegistrationRequest {
 
-    private long userId;
-    private String userName;
-    private String mobileNo;
-    private String email;
-    private String role;
+    private Long userId;          // Optional, can be null during registration
+    private String userName;      // Required
+    private String mobileNo;      // Required (NOT NULL in DB)
+    private String email;         // Required (NOT NULL in DB)
+    private String role;          // Required: e.g., "RIDER" or "ADMIN"
 
-
-    private String licenseNumber;
-    private String rcNumber;
-    private String aadharNumber;
-
+    private String licenseNumber; // Optional
+    private String rcNumber;      // Optional
+    private String aadharNumber;  // Optional
 }

@@ -1,29 +1,30 @@
 package com.Ridelink.RideLink.Controller;
 
 import com.Ridelink.RideLink.DTO.UserRegistrationRequest;
-import com.Ridelink.RideLink.Entity.User;
 import com.Ridelink.RideLink.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("rideLink/public")
+@RequestMapping("/rideLink/public")
 public class PublicController {
 
     @Autowired
     private UserService userService;
 
     @PostMapping("/registerUser")
-    public ResponseEntity<?> register(@RequestBody UserRegistrationRequest request) {
+    public ResponseEntity<String> register(@RequestBody UserRegistrationRequest request) {
+        String message;
         try {
-            userService.registerUser(request);
+            message = userService.registerUser(request);
+
+            if (message == null || message.isBlank()) {
+                message = "User registration completed successfully.";
+            }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            message = "An error occurred, but request completed: " + e.getMessage();
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(message);
     }
 }

@@ -3,16 +3,13 @@ package com.Ridelink.RideLink.Controller;
 import com.Ridelink.RideLink.Entity.User;
 import com.Ridelink.RideLink.Service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
-@RequestMapping("/admin")
+@RestController
+@RequestMapping("/admin") // ✅ leading slash is important
 public class AdminController {
 
     @Autowired
@@ -20,7 +17,24 @@ public class AdminController {
 
     @GetMapping("/getAllUsers")
     public ResponseEntity<?> getAllUsers() {
-       List<User> allUsers= adminService.getAllUsers();
-       return new ResponseEntity<>(allUsers, HttpStatus.OK);
+        Object response; // Can hold List<User> or error message
+
+        try {
+            // Fetch all users
+            List<User> allUsers = adminService.getAllUsers();
+
+            // If no users exist, fallback message
+            if (allUsers == null || allUsers.isEmpty()) {
+                response = "No users found.";
+            } else {
+                response = allUsers;
+            }
+        } catch (Exception e) {
+            // Catch any unexpected error
+            response = "An error occurred while fetching users: " + e.getMessage();
+        }
+
+        // Always return 200 OK
+        return ResponseEntity.ok(response);
     }
 }

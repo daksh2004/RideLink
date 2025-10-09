@@ -17,44 +17,47 @@ public class UserService {
     @Autowired
     private RiderRepository riderRepository;
 
+    public String registerUser(UserRegistrationRequest request) {
 
-    public void registerUser(UserRegistrationRequest request) {
-
-        if(userRepository.existsByEmail(request.getEmail())){
-           throw new RuntimeException("Email already registered");
+        if (userRepository.existsByEmail(request.getEmail())) {
+            return "Email already registered";
         }
 
-       try{
-           User user = new User();
-           user.setUserName(request.getUserName());
-           user.setMobileNo(request.getMobileNo());
-           user.setEmail(request.getEmail());
+        try {
+            User user = new User();
+            user.setUserName(request.getUserName());
+            user.setMobileNo(request.getMobileNo());
+            user.setEmail(request.getEmail());
 
-           String role = (request.getRole() == null || request.getRole().isBlank()) ? "PASSANGER" : request.getRole();
-           user.setRole(role);
+            // Default role: PASSENGER
+            String role = (request.getRole() == null || request.getRole().isBlank())
+                    ? "PASSENGER"
+                    : request.getRole().toUpperCase();
+            user.setRole(role);
 
-           User savedUser = userRepository.save(user);
+            User savedUser = userRepository.save(user);
 
-           if("RIDER".equalsIgnoreCase(role)){
-               Rider rider = new Rider();
-               rider.setLicenseNumber(request.getLicenseNumber());
-               rider.setRcNumber(request.getRcNumber());
-               rider.setAadharNumber(request.getAadharNumber());
-               rider.setUser(savedUser);
+            if ("RIDER".equalsIgnoreCase(role)) {
+                Rider rider = new Rider();
+                rider.setLicenseNumber(request.getLicenseNumber());
+                rider.setRcNumber(request.getRcNumber());
+                rider.setAadharNumber(request.getAadharNumber());
+                rider.setUser(savedUser);
 
-               riderRepository.save(rider);
-           }
-       }
-       catch (Exception e){
-           throw new RuntimeException(e);
-       }
+                riderRepository.save(rider);
+                return "Rider registered successfully.";
+            }
 
+            return "Passenger registered successfully.";
+        } catch (Exception e) {
+            return "An error occurred during registration: " + e.getMessage();
+        }
     }
 
-    public void registerAsRider(UserRegistrationRequest request) {
+    public String registerAsRider(UserRegistrationRequest request) {
 
-        if(riderRepository.existsByAadharNumber(request.getAadharNumber())){
-            throw new RuntimeException("Rider already registered with this aadhar number");
+        if (riderRepository.existsByAadharNumber(request.getAadharNumber())) {
+            return "Rider already registered with this Aadhar number.";
         }
 
         try {
@@ -65,10 +68,9 @@ public class UserService {
             rider.setUser(userRepository.findByUserId(request.getUserId()));
 
             riderRepository.save(rider);
+            return "Rider registration successful.";
+        } catch (Exception e) {
+            return "Please enter correct details.";
         }
-        catch (Exception e){
-            throw new RuntimeException("Please Enter Correct Details");
-        }
-
     }
 }
