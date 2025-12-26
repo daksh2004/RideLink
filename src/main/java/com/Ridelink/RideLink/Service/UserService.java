@@ -78,7 +78,7 @@ public class UserService {
             rider.setUser(user);
 
             riderRepository.save(rider);
-            return "Rider registered successfully";
+            return "Rider registration successful";
 
         } catch (Exception e) {
             return "Please enter correct details";

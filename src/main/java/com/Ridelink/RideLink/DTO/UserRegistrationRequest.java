@@ -9,7 +9,7 @@ public class UserRegistrationRequest {
     private String userName;      // Required
     private String mobileNo;      // Required (NOT NULL in DB)
     private String email;         // Required (NOT NULL in DB)
-    private String role;          // Required: e.g., "RIDER" or "ADMIN"
+    private String role;
 
     private String licenseNumber; // Optional
     private String rcNumber;      // Optional
