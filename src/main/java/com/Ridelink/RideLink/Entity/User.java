@@ -1,37 +1,35 @@
 package com.Ridelink.RideLink.Entity;
 
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@Table(name = "user")
-@Data
+@Table(name = "users")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
-
-    @Column(nullable = false)
-    private String userName;
-
-    @Column(nullable = false)
-    private String mobileNo;
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false)
+    private String password;
+
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
+
+    private String phone;
+
+    // Roles: "ROLE_USER", "ROLE_DRIVER"
     private String role;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-
-    private Rider rider;
-
-
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
 }
