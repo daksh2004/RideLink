@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.UUID; // <-- Ye import zaroori hai Payment ID ke liye
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -52,10 +53,13 @@ public class BookingServiceImpl implements BookingService {
         booking.setPassenger(passenger);
         booking.setBookingTime(LocalDateTime.now());
         booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setPaid(false); // Default payment status false rahega
 
+        // OTP Generate Logic (4 Digit)
         String otp = String.format("%04d", new Random().nextInt(10000));
         booking.setRideOtp(otp);
 
+        // Seat Minus Logic
         ride.setAvailableSeats(ride.getAvailableSeats() - 1);
         if (ride.getAvailableSeats() == 0) {
             ride.setStatus(RideStatus.FULL);
@@ -71,6 +75,24 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new BadRequestException("Invalid OTP or Booking not found"));
 
         booking.setStatus(BookingStatus.COMPLETED);
+        return bookingRepository.save(booking);
+    }
+
+    // --- NEW METHOD: FAKE PAYMENT LOGIC ---
+    @Override
+    public Booking processPayment(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
+
+        if (booking.isPaid()) {
+            throw new BadRequestException("Booking is already paid!");
+        }
+
+        // Fake Payment Process
+        booking.setPaid(true);
+        // Ek unique fake transaction ID generate kar rahe hain
+        booking.setPaymentId("PAY_DEMO_" + UUID.randomUUID().toString());
+
         return bookingRepository.save(booking);
     }
 }
