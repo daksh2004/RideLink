@@ -1,0 +1,101 @@
+package com.Ridelink.RideLink.Controller;
+
+import com.Ridelink.RideLink.DTO.MessageResponse;
+import com.Ridelink.RideLink.DTO.RideRequestDto;
+import com.Ridelink.RideLink.Entity.Ride;
+import com.Ridelink.RideLink.Service.RideService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/rides")
+@CrossOrigin(origins = "*")
+public class RideController {
+
+    @Autowired
+    private RideService rideService;
+
+    // Create Ride (Only Drivers)
+    @PostMapping("/create")
+    public ResponseEntity<?> createRide(@RequestBody RideRequestDto rideRequest,
+                                        @RequestParam Long driverId) {
+        Ride ride = Ride.builder()
+                .sourceName(rideRequest.getSourceName())
+                .sourceLatitude(rideRequest.getSourceLatitude())
+                .sourceLongitude(rideRequest.getSourceLongitude())
+                .destinationName(rideRequest.getDestinationName())
+                .destinationLatitude(rideRequest.getDestinationLatitude())
+                .destinationLongitude(rideRequest.getDestinationLongitude())
+                .departureTime(rideRequest.getDepartureTime())
+                .pricePerSeat(rideRequest.getPricePerSeat())
+                .totalSeats(rideRequest.getTotalSeats())
+                .build();
+
+        Ride createdRide = rideService.createRide(ride, driverId);
+        return ResponseEntity.ok(createdRide);
+    }
+
+    // Search Rides (Public)
+    @GetMapping("/search")
+    public ResponseEntity<List<Ride>> searchRides(
+            @RequestParam String source,
+            @RequestParam String destination,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
+
+        List<Ride> rides = rideService.searchRides(source, destination, date);
+        return ResponseEntity.ok(rides);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Ride> getRide(@PathVariable Long id) {
+        return ResponseEntity.ok(rideService.getRideById(id));
+    }
+
+    @GetMapping("/driver/{driverId}")
+    public ResponseEntity<List<Ride>> getRidesByDriver(@PathVariable Long driverId) {
+        List<Ride> rides = rideService.getRidesByDriverId(driverId);
+        return ResponseEntity.ok(rides);
+    }
+
+    @PostMapping("/search-instant")
+    public ResponseEntity<List<Ride>> searchInstantRides(@RequestBody Map<String, Object> requestData) {
+
+        // Frontend se aaye hue exact coordinates ko nikal rahe hai
+        Double pLat = Double.valueOf(requestData.get("pickupLat").toString());
+        Double pLng = Double.valueOf(requestData.get("pickupLng").toString());
+        Double dLat = Double.valueOf(requestData.get("dropLat").toString());
+        Double dLng = Double.valueOf(requestData.get("dropLng").toString());
+
+        // Passenger ko kitni seats chahiye (agar na bheje toh default 1)
+        Integer seats = 1;
+        if (requestData.containsKey("seats")) {
+            seats = Integer.valueOf(requestData.get("seats").toString());
+        }
+
+        // Service ko call karke MySQL se matched rides lao
+        List<Ride> matchedRides = rideService.searchInstantCarpools(pLat, pLng, dLat, dLng, seats);
+
+        return ResponseEntity.ok(matchedRides);
+    }
+
+    @PutMapping("/{rideId}/complete")
+     public ResponseEntity<?> completeRide(@PathVariable Long rideId) {
+        try {
+            rideService.completeRide(rideId);
+        }
+        catch (Exception e){
+            ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+        return ResponseEntity.ok().build();
+    }
+}
